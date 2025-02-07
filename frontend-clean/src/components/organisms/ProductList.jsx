@@ -6,6 +6,7 @@ function ProductList({ product, onEdit }) {
   const [products, setProducts] = useState([]); // Asegurarse de que sea un arreglo vacío
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [sortOption, setSortOption] = useState("priceAsc"); // Nuevo estado para el select
 
   useEffect(() => {
     const url = import.meta.env.VITE_API_PRODUCTS;
@@ -29,6 +30,33 @@ function ProductList({ product, onEdit }) {
         console.error("Error fetching products:", error);
       });
   }, []);
+
+  useEffect(() => {
+    // Ordenar los productos según la opción seleccionada
+    let sortedProducts = [...products];
+
+    switch (sortOption) {
+      case "priceAsc":
+        sortedProducts.sort((a, b) => a.Price - b.Price); // Ordenar de menor a mayor precio
+        break;
+      case "priceDesc":
+        sortedProducts.sort((a, b) => b.Price - a.Price); // Ordenar de mayor a menor precio
+        break;
+      case "nameAsc":
+        sortedProducts.sort((a, b) => a.Name.localeCompare(b.Name)); // Ordenar alfabéticamente A-Z
+        break;
+      case "nameDesc":
+        sortedProducts.sort((a, b) => b.Name.localeCompare(a.Name)); // Ordenar alfabéticamente Z-A
+        break;
+      case "newest":
+        sortedProducts.sort((a, b) => b.Id - a.Id); // Ordenar por ID, los IDs más grandes son los más recientes
+        break;
+      default:
+        break;
+    }
+
+    setProducts(sortedProducts);
+  }, [sortOption, products]); // Se vuelve a ordenar cuando cambie la opción de ordenación
 
   const handleSelectProduct = (id) => {
     setSelectedProducts((prev) => {
@@ -71,7 +99,7 @@ function ProductList({ product, onEdit }) {
           })
             .then(() => {
               setProducts((prevProducts) =>
-                prevProducts.filter((product) => product.id !== id)
+                prevProducts.filter((product) => product.Id !== id)
               );
             })
             .catch((error) => {
@@ -102,30 +130,50 @@ function ProductList({ product, onEdit }) {
             id="tableHead"
             className="text-2xl text-center w-full font-black text-white rounded-2xl"
           >
-            <p className="text-4xl text-center w-full font-black text-white mb-4 mt-4">Lista de Productos</p>
+            <p className="text-4xl text-center w-full font-black text-white mb-4 mt-4">
+              Lista de Productos
+            </p>
+          </div>
+
+          {/* Select para ordenar */}
+          <div className="w-full flex justify-center mb-4">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="p-2 bg-gray-300 text-xl rounded-lg"
+            >
+              <option value="priceAsc">Precio: Menor a Mayor</option>
+              <option value="priceDesc">Precio: Mayor a Menor</option>
+              <option value="nameAsc">Nombre: A-Z</option>
+              <option value="nameDesc">Nombre: Z-A</option>
+              <option value="newest">Más Recientes</option>
+            </select>
           </div>
 
           <div className="container flex-grow w-12/12">
-            {Array.isArray(products) && products.map((product) => (
-              <div
-                key={product.Id}
-                onClick={() => handleSelectProduct(product.Id)}
-                onDoubleClick={() => {
-                  console.log("Editando producto:", product);
-                  onEdit(product);
-                }}
-                className={`mb-2 cursor-pointer ${selectedProducts.includes(product.Id)
-                    ? "bg-yellow-100"
-                    : "bg-white"} hover:bg-blue-200 transition duration-400`}
-              >
-                <div className="flex justify-between items-center w-[70%] mx-6">
-                  <h3 className="text-xl font-semibold">{product.Name}</h3>
-                  <p className="text-xl font-semibold text-black">
-                    Precio: ${product.Price}
-                  </p>
+            {Array.isArray(products) &&
+              products.map((product) => (
+                <div
+                  key={product.Id}
+                  onClick={() => handleSelectProduct(product.Id)}
+                  onDoubleClick={() => {
+                    console.log("Editando producto:", product);
+                    onEdit(product);
+                  }}
+                  className={`mb-2 cursor-pointer ${
+                    selectedProducts.includes(product.Id)
+                      ? "bg-yellow-100"
+                      : "bg-white"
+                  } hover:bg-blue-200 transition duration-400`}
+                >
+                  <div className="flex justify-between items-center w-[70%] mx-6">
+                    <h3 className="text-xl font-semibold">{product.Name}</h3>
+                    <p className="text-xl font-semibold text-black">
+                      Precio: ${product.Price}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
 
           <div className="flex w-full justify-evenly items-center space-x-4 p-4">

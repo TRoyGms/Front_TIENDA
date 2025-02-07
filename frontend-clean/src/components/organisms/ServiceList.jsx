@@ -6,6 +6,7 @@ function ServiceList({ service, onEdit }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [sortOption, setSortOption] = useState("priceAsc"); // Nuevo estado para el select
 
   useEffect(() => {
     const url = import.meta.env.VITE_API_SERVICES;
@@ -24,6 +25,33 @@ function ServiceList({ service, onEdit }) {
         console.error("Error fetching services:", error);
       });
   }, []);
+
+  useEffect(() => {
+    // Ordenar los servicios según la opción seleccionada
+    let sortedServices = [...services];
+
+    switch (sortOption) {
+      case "priceAsc":
+        sortedServices.sort((a, b) => a.price - b.price); // Ordenar de menor a mayor precio
+        break;
+      case "priceDesc":
+        sortedServices.sort((a, b) => b.price - a.price); // Ordenar de mayor a menor precio
+        break;
+      case "nameAsc":
+        sortedServices.sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente A-Z
+        break;
+      case "nameDesc":
+        sortedServices.sort((a, b) => b.name.localeCompare(a.name)); // Ordenar alfabéticamente Z-A
+        break;
+      case "newest":
+        sortedServices.sort((a, b) => b.id - a.id); // Ordenar por ID, los IDs más grandes son los más recientes
+        break;
+      default:
+        break;
+    }
+
+    setServices(sortedServices);
+  }, [sortOption, services]); // Se vuelve a ordenar cuando cambie la opción de ordenación
 
   const handleSelectService = (id) => {
     setSelectedServices((prev) => {
@@ -100,7 +128,23 @@ function ServiceList({ service, onEdit }) {
             id="tableHead"
             className="text-2xl text-center w-full font-black text-white rounded-2xl"
           >
-            <p className="text-4xl text-center w-full font-black text-white mb-4 mt-4">Lista de Servicios</p>
+            <p className="text-4xl text-center w-full font-black text-white mb-4 mt-4">
+              Lista de Servicios
+            </p>
+          </div>
+
+          <div className="w-full flex justify-center mb-4">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="p-2 bg-gray-200 text-2xl rounded-lg"
+            >
+              <option value="priceAsc">Precio: Menor a Mayor</option>
+              <option value="priceDesc">Precio: Mayor a Menor</option>
+              <option value="nameAsc">Nombre: A-Z</option>
+              <option value="nameDesc">Nombre: Z-A</option>
+              <option value="newest">Más Recientes</option>
+            </select>
           </div>
 
           <div className="container flex-grow w-12/12">

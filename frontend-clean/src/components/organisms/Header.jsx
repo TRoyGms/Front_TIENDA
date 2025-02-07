@@ -2,11 +2,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 function Header() {
-  const location = useLocation(); // Hook para obtener la ubicación actual
+  const location = useLocation();
 
   const handleLinkClick = (to) => {
     if (location.pathname === to) {
-      window.location.reload(); // Refresca la página si la ruta es la misma
+      window.location.reload();
     }
   };
 
